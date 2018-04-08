@@ -2,6 +2,8 @@
 #include "log.h"
 
 int main() {
-    std::cout << "Hello, World!" << std::endl;
+    Log logg("main");
+    Error error(OK);
+    LOG_ERROR(error);
     return 0;
 }

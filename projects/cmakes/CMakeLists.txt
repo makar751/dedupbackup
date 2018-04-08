@@ -6,3 +6,6 @@ set (LOG4CPLUS_LINK
 
 set (LOG4CPLUS_LIBRARIE
         log4cplus)
+
+set (SHA512_INCLUDE
+        ${3LIBS_DIR}/sha512)
