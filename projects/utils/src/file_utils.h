@@ -10,24 +10,73 @@
 #include "error.h"
 #include "log.h"
 
+class IFile {
+public:
+    IFile() {};
+    IFile(std::string path, struct stat file_info) : path_(path), file_info_(file_info) {};
+    virtual int GetType() = 0;
+    virtual void CalcHash() = 0;
+    ~IFile() {};
+protected:
+    std::string path_;
+    struct stat file_info_;
+
+    enum FileType {
+        regular = 0,
+        link
+    };
+};
+
+class RegularFile : public IFile {
+public:
+    RegularFile(std::string path, struct stat file_info) : IFile(path, file_info){};
+    int GetType();
+    void CalcHash();
+private:
+    std::string hash_;
+};
+
+class LinkToFile : public IFile {
+public:
+    LinkToFile(std::string path, struct stat file_info) : IFile(path, file_info){};
+    int GetType();
+    void CalcHash();
+private:
+    std::string path_to_file_;
+};
+
 class File {
 public:
-    File(std::string path) : path_(path) {};
-    Error GetFileInfo();
-    Error CalculateHash();
+    File(std::string path, struct stat file_info);
+    void CalculateHash();
+    ~File();
 private:
-    std::string path_;
-    std::string name_;
-    std::string hash_;
-    mode_t access_rights_;
-    uid_t user_id_;
-    gid_t group_id_;
+    IFile *file_;
 
     Log Logg() {
         static Log logger_("file_utils");
         return logger_;
     }
 
+};
+
+class Directory {
+public:
+    Directory(std::string path) : path_(path)  {};
+    Error Scan();
+    std::vector<File*> GetFiles();
+    std::vector<Directory*> GetSubDirs();
+    ~Directory();
+private:
+    std::string path_;
+    struct stat dir_info_;
+    std::vector<File*> files_;
+    std::vector<Directory*> sub_dirs_;
+
+    Log Logg() {
+        static Log logger_("file_utils");
+        return logger_;
+    }
 };
 
 #endif //DEDUPBACKUP_FILE_UTILS_H
